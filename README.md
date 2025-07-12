@@ -8,6 +8,19 @@ This project is a multi-agent, sponsor-integrated artistic QR code generator bui
 - Artistic QR code generation with selectable styles
 - Live agent logs, protocol messages, and workflow trace
 
+## Tailwind CSS Compatibility
+**This project uses Tailwind CSS v3 for maximum compatibility with Vite and PostCSS.**
+- The PostCSS config uses the classic plugin syntax:
+  ```js
+  module.exports = {
+    plugins: [
+      require('tailwindcss'),
+      require('autoprefixer'),
+    ],
+  }
+  ```
+- If you upgrade to Tailwind v4+, you must update your PostCSS config and may encounter compatibility issues.
+
 ## Getting Started
 
 ### 1. Clone the repository
@@ -57,6 +70,67 @@ Visit the local URL (usually http://localhost:5173) to use the app.
 ## Testing
 - The app is self-contained and can be tested by running locally and interacting with the UI.
 - All sponsor integrations are simulated for demo purposes.
+
+## Deploying to Fly.io
+
+### Quickstart: Deploy HelloFly Demo App
+If you just want to try Fly.io, you can launch their demo app:
+
+```bash
+# Install flyctl (if not already installed)
+brew install flyctl  # or: curl -L https://fly.io/install.sh | sh
+
+# Sign up or log in
+fly auth signup   # or: fly auth login
+
+# Launch the HelloFly demo app
+fly launch --image flyio/hellofly:latest
+```
+
+### Deploying This React App to Fly.io
+
+1. **Create a Dockerfile in the `frontend` directory:**
+
+```Dockerfile
+# Dockerfile for Vite React app
+FROM node:20-alpine AS build
+WORKDIR /app
+COPY ./frontend .
+RUN npm install && npm run build
+
+FROM nginx:alpine
+COPY --from=build /app/dist /usr/share/nginx/html
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
+```
+
+2. **Initialize Fly app and deploy:**
+```bash
+cd frontend
+fly launch  # Accept defaults, or set a name/region
+fly deploy
+```
+
+3. **Visit your deployed app:**
+Fly will provide a URL like `https://<your-app-name>.fly.dev/` after deployment.
+
+---
+
+**Note:** If Fly.io cannot detect your framework, ensure you are in the `frontend` directory and have a `Dockerfile` present.
+
+## Troubleshooting
+
+- **No colors or gradients in the UI?**
+  - Make sure you are using Tailwind CSS v3 (see compatibility note above).
+  - Ensure your `postcss.config.cjs` uses the classic plugin syntax (see above).
+  - Make sure your `src/index.css` contains only:
+    ```css
+    @tailwind base;
+    @tailwind components;
+    @tailwind utilities;
+    ```
+  - If you see a red background but no Tailwind styles, your CSS is loading but Tailwind is not being processed—check your PostCSS config and Tailwind version.
+  - If you upgrade to Tailwind v4+, see the [Tailwind v4 migration guide](https://tailwindcss.com/docs/upgrade-guide) and update your PostCSS config accordingly.
 
 ## License
 MIT
