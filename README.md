@@ -29,7 +29,37 @@ git clone <repo-url>
 cd weavehacks
 ```
 
-### 2. Install dependencies and run locally
+---
+
+## Backend (Python + FastAPI + Weave)
+
+### Setup
+
+```bash
+cd backend
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+### Run the backend server
+```bash
+uvicorn main:app --reload
+```
+- The backend will be available at http://localhost:8000
+- Health check: http://localhost:8000/health
+- Trace endpoint: POST http://localhost:8000/trace
+
+### Weave/W&B Integration
+- The backend logs trace events to Weights & Biases (W&B) using the `wandb` Python SDK.
+- Set the `WANDB_PROJECT` environment variable to change the project name (default: `weavehacks-demo`).
+- You can view traces in your W&B dashboard.
+
+---
+
+## Frontend (React + Vite + Tailwind CSS)
+
+### Install dependencies and run locally
 This project uses [Vite](https://vitejs.dev/) for fast React development. If you don't have Vite, install it globally or use `npm create vite@latest`.
 
 #### If starting from scratch:

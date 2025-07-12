@@ -1,9 +1,9 @@
-# fly.toml app configuration file generated for frontend-wild-hill-8974 on 2025-07-12T13:12:58-07:00
+# fly.toml app configuration file generated for weavehacks-agentqr on 2025-07-12T16:05:48-07:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'frontend-wild-hill-8974'
+app = 'weavehacks-agentqr'
 primary_region = 'sjc'
 
 [build]

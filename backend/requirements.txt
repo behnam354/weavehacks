@@ -1,0 +1,5 @@
+fastapi
+uvicorn
+wandb
+weave
+python-dotenv 

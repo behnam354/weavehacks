@@ -43,7 +43,8 @@ const ArtisticQRGenerator = () => {
 
   const addLog = (agent, message, type = 'info') => {
     const timestamp = new Date().toLocaleTimeString();
-    setAgentLogs(prev => [...prev, { agent, message, type, timestamp }]);
+    const logEvent = { agent, message, type, timestamp };
+    setAgentLogs(prev => [...prev, logEvent]);
     
     // Add to Weave trace
     setWeaveTrace(prev => [...prev, {
@@ -53,6 +54,13 @@ const ArtisticQRGenerator = () => {
       timestamp,
       duration: Math.random() * 2000 + 500
     }]);
+
+    // Send log event to backend for Weave logging
+    fetch('http://localhost:8000/trace', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(logEvent),
+    }).catch(() => {/* ignore errors for now */});
   };
 
   const addProtocolMessage = (from, to, message) => {
@@ -279,6 +287,17 @@ const ArtisticQRGenerator = () => {
     }
   };
 
+  // Debug: Confirm backend and W&B connection
+  const debugWandbConnection = async () => {
+    try {
+      const res = await fetch('http://localhost:8000/debug-wandb', { method: 'POST' });
+      const data = await res.json();
+      addLog('Weave Debug', data.message, 'success');
+    } catch (e) {
+      addLog('Weave Debug', 'Failed to connect to backend or W&B', 'error');
+    }
+  };
+
   return (
     <div className="max-w-7xl mx-auto p-4 bg-gradient-to-br from-gray-900 via-purple-900 to-blue-900 min-h-screen text-white">
       {/* Header */}
@@ -346,6 +365,14 @@ const ArtisticQRGenerator = () => {
                     Run Multi-Agent System
                   </>
                 )}
+              </button>
+              {/* Debug button for W&B connection */}
+              <button
+                onClick={debugWandbConnection}
+                className="w-full mt-2 bg-gradient-to-r from-green-600 to-blue-600 text-white font-medium py-2 px-4 rounded-lg hover:from-green-700 hover:to-blue-700 transition-all flex items-center justify-center gap-2"
+              >
+                <CheckCircle className="w-4 h-4" />
+                Debug: Confirm W&B Connection
               </button>
             </div>
           </div>
