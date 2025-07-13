@@ -159,6 +159,10 @@ def run_crew(topic: str, qr_data: str = 'behnamshahbazi.com/qrwe'):
         process=Process.sequential,
     )
 
+    # Explicitly run the Crew to orchestrate all agents and tasks using kickoff, passing topic as input
+    crew_output = crew.kickoff({'topic': topic})
+    print(f"[DEBUG] Crew kickoff output: {crew_output}")
+
     EXA_API_KEY = os.getenv("EXA_API_KEY", "your_exa_api_key")
     BROWSERBASE_API_KEY = os.getenv("BROWSERBASE_API_KEY", "your_browserbase_api_key")
 
