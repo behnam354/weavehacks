@@ -3,7 +3,7 @@ import { Palette, QrCode, Bot, Zap, Search, Image, Download, Trophy, Cloud, Glob
 
 const ArtisticQRGenerator = () => {
   const [qrData, setQrData] = useState('behnamshahbazi.com/qrwe');
-  const [artStyle, setArtStyle] = useState('cyberpunk');
+  const [artStyle, setArtStyle] = useState('nature');
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedQR, setGeneratedQR] = useState(null);
   const [agentLogs, setAgentLogs] = useState([]);
@@ -11,7 +11,7 @@ const ArtisticQRGenerator = () => {
   const [activeAgents, setActiveAgents] = useState([]);
   const [exaResults, setExaResults] = useState([]);
   const [protocolMessages, setProtocolMessages] = useState([]);
-  const [crewTopic, setCrewTopic] = useState('Google Cloud');
+  const [crewTopic, setCrewTopic] = useState('Coreweave');
   const [crewResult, setCrewResult] = useState(null);
   const [error, setError] = useState(null);
   const canvasRef = useRef(null);
@@ -552,7 +552,7 @@ const ArtisticQRGenerator = () => {
                 <img 
                   src={generatedQR.image} 
                   alt="Generated QR Code"
-                  className="w-full h-48 object-cover border-2 border-purple-500 rounded-lg mb-3"
+                  className="w-full h-48 object-contain border-2 border-purple-500 rounded-lg mb-3 bg-white p-2"
                 />
                 <button
                   className="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg mt-3 flex items-center justify-center gap-2 disabled:opacity-50"
