@@ -340,8 +340,13 @@ const ArtisticQRGenerator = () => {
         resultText = 'No result data available';
       }
       setCrewResult(resultText);
-      if (data.qr_code_url || data.image_url) { // Accept either key for robustness
-        setGeneratedQR({ image: data.qr_code_url || data.image_url });
+      // Fix: Look for qr_code_url/image_url inside data.result if not found at top level
+      let qrImageUrl = data.qr_code_url || data.image_url;
+      if (!qrImageUrl && data.result && typeof data.result === 'object') {
+        qrImageUrl = data.result.qr_code_url || data.result.image_url;
+      }
+      if (qrImageUrl) {
+        setGeneratedQR({ image: qrImageUrl });
       }
       addLog('Crew AI', 'Crew workflow completed successfully', 'success');
     } catch (e) {

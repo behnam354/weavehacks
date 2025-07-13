@@ -242,7 +242,8 @@ def run_crew(topic: str, qr_data: str = 'behnamshahbazi.com/qrwe'):
             f"Brand summary: {inputs['summary']}\n"
             f"Include design style, color palette, mood, composition details.\n"
             f"The prompt should be a comma-separated list of up to 5 unique keywords and phrases (no duplicates), no more than 120 characters in total, in the style of AI art prompts.\n"
-            f"Follow this example for style: 'surreal concept art of a futuristic house floating on a cloud with waterfall, peaceful and modern, cosy, minimalistic, big windows, natural lighting, sci-fi, lots of details, intricate scene, correct, digital painting, fine tuned, 64k'.\n"
+            f"The prompt MUST be tailored to generate a CUTE, VERY ARTISTIC, and HIGH-QUALITY logo.\n"
+            f"Follow this example for style: 'cute, high quality, artistic, logo, dreamy, soft colors, adorable, intricate, digital painting, 64k'.\n"
             f"Tailor the keywords to the company or brand name, its logo, and its color palette. Respond ONLY with the short prompt for the QR code generator, nothing else."
         )
         return prompt_agent.llm.call(prompt, temperature=0.7)
