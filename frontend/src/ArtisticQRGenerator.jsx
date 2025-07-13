@@ -11,8 +11,9 @@ const ArtisticQRGenerator = () => {
   const [activeAgents, setActiveAgents] = useState([]);
   const [exaResults, setExaResults] = useState([]);
   const [protocolMessages, setProtocolMessages] = useState([]);
-  const [crewTopic, setCrewTopic] = useState('Corewave stock');
+  const [crewTopic, setCrewTopic] = useState('Google Cloud');
   const [crewResult, setCrewResult] = useState(null);
+  const [error, setError] = useState(null);
   const canvasRef = useRef(null);
 
   // Environment detection for backend URL
@@ -313,6 +314,8 @@ const ArtisticQRGenerator = () => {
   };
 
   const runCrewWorkflow = async () => {
+    setIsGenerating(true);
+    setError(null);
     try {
       addLog('Crew AI', `Running Crew workflow for topic: ${crewTopic}`, 'system');
       const res = await fetch(`${backendUrl}/run-crew`, {
@@ -321,18 +324,14 @@ const ArtisticQRGenerator = () => {
         body: JSON.stringify({ topic: crewTopic }),
       });
       const data = await res.json();
-      
-      // Extract the actual result text from the Crew AI response
+      console.log('Backend response:', data); // <-- Add this line for debugging
       let resultText = '';
       if (data.result && typeof data.result === 'object') {
-        // If it's an object with a 'raw' property, use that
         if (data.result.raw) {
           resultText = data.result.raw;
         } else if (data.result.tasks_output) {
-          // If it has tasks_output, try to extract from there
           resultText = JSON.stringify(data.result.tasks_output, null, 2);
         } else {
-          // Fallback: stringify the entire result object
           resultText = JSON.stringify(data.result, null, 2);
         }
       } else if (typeof data.result === 'string') {
@@ -340,11 +339,16 @@ const ArtisticQRGenerator = () => {
       } else {
         resultText = 'No result data available';
       }
-      
       setCrewResult(resultText);
+      if (data.qr_code_url || data.image_url) { // Accept either key for robustness
+        setGeneratedQR({ image: data.qr_code_url || data.image_url });
+      }
       addLog('Crew AI', 'Crew workflow completed successfully', 'success');
     } catch (e) {
+      setError('Failed to run Crew workflow. Please try again.');
       addLog('Crew AI', 'Failed to run Crew workflow', 'error');
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -457,7 +461,7 @@ const ArtisticQRGenerator = () => {
 
           <div className="mt-4 bg-gray-700 rounded-lg p-4">
             <label className="block text-sm font-medium text-gray-300 mb-1">
-              Crew AI Topic
+              Brand Name
             </label>
             <input
               type="text"
@@ -470,7 +474,7 @@ const ArtisticQRGenerator = () => {
               className="w-full mt-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium py-2 px-4 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all flex items-center justify-center gap-2"
             >
               <Rocket className="w-4 h-4" />
-              Run Crew AI Workflow
+              Generate Artistic QR Code
             </button>
           </div>
         </div>
@@ -528,21 +532,25 @@ const ArtisticQRGenerator = () => {
               <Image className="w-5 h-5 text-purple-400" />
               Generated QR
             </h2>
-            
-            {generatedQR ? (
+            {isGenerating ? (
+              <div className="flex flex-col items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-purple-500 mb-4"></div>
+                <div className="text-purple-300">Generating QR code art...</div>
+              </div>
+            ) : error ? (
+              <div className="text-center py-8 text-red-400">
+                <QrCode className="w-16 h-16 mx-auto mb-2 opacity-50" />
+                <p className="text-sm">{error}</p>
+              </div>
+            ) : generatedQR ? (
               <div className="text-center">
                 <img 
                   src={generatedQR.image} 
                   alt="Generated QR Code"
                   className="w-full h-48 object-cover border-2 border-purple-500 rounded-lg mb-3"
                 />
-                <div className="text-xs text-gray-400 space-y-1">
-                  <p>Readability: {generatedQR.performance.readability}</p>
-                  <p>Art Score: {generatedQR.performance.artisticScore}/10</p>
-                  <p>Generation: {generatedQR.performance.generationTime}</p>
-                </div>
                 <button
-                  className="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg mt-3 flex items-center justify-center gap-2"
+                  className="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg mt-3 flex items-center justify-center gap-2 disabled:opacity-50"
                   onClick={() => {
                     if (generatedQR?.image) {
                       const link = document.createElement('a');
@@ -553,6 +561,7 @@ const ArtisticQRGenerator = () => {
                       document.body.removeChild(link);
                     }
                   }}
+                  disabled={isGenerating}
                 >
                   <Download className="w-4 h-4" />
                   Download

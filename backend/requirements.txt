@@ -4,4 +4,6 @@ wandb
 weave
 python-dotenv
 crewai
-openai 
+openai
+replicate
+requests 
