@@ -10,6 +10,48 @@
 
 # Artistic QR Code Generator (WeaveHacks)
 
+## Tech Stack
+
+**Languages:**
+- Python 3.11+ (backend, agent orchestration, API)
+- JavaScript (ES6+) (frontend, React)
+- TypeScript (optionally supported in frontend)
+
+**Frameworks & Libraries:**
+- FastAPI (Python web framework for backend API)
+- React (frontend UI framework)
+- Vite (frontend build tool for React)
+- Tailwind CSS (utility-first CSS framework for styling)
+- CrewAI (multi-agent orchestration framework)
+- OpenAI / Weights & Biases (W&B) LLM (LLM orchestration and logging)
+- Replicate (AI model inference for artistic QR code generation)
+- Weave (tracing, observability, and logging for agents)
+- Lucide-react (icon library for React UI)
+- requests (Python HTTP client for API calls)
+- dotenv (environment variable management)
+
+**APIs & External Services:**
+- Replicate API (for generative AI QR code art)
+- Exa API (semantic web search for brand/visual identity research)
+- Browserbase API (web scraping for design/brand research)
+- Weights & Biases (W&B) API (experiment tracking, logging, and observability)
+- OpenAI API (LLM, via W&B inference endpoint)
+
+**Cloud Platforms & Deployment:**
+- Fly.io (cloud platform for deploying backend and frontend)
+- Docker (containerization for deployment)
+- Nginx (serving static frontend assets in production)
+
+**Other Technologies:**
+- PostCSS (CSS processing for Tailwind)
+- Uvicorn (ASGI server for FastAPI)
+- Pydantic (data validation in FastAPI)
+- Git (version control)
+- GitHub (repository hosting and collaboration)
+
+**Databases:**
+- None required for core functionality (all data is ephemeral or handled via APIs; could be extended with a database for user/session storage if needed)
+
 This project is a multi-agent, sponsor-integrated artistic QR code generator built for the WeaveHacks hackathon. It uses a React frontend to simulate agent workflows, protocol messages, and artistic QR code creation.
 
 ## Features
