@@ -6,6 +6,14 @@
 
 <h2 align="center"><i>QR Codes, reimagined by AI</i></h2>
 
+<p align="center">
+  <a href="https://weavehacks-agentqr.fly.dev/" target="_blank"><b>🚀 Live Demo: weavehacks-agentqr.fly.dev</b></a>
+</p>
+
+<p align="center">
+  <a href="https://linktr.ee/weavehacks.agentqr" target="_blank"><b>👥 Team & Links: linktr.ee/weavehacks.agentqr</b></a>
+</p>
+
 ---
 
 # Artistic QR Code Generator (WeaveHacks)
