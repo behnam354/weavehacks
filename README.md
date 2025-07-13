@@ -54,6 +54,61 @@
 
 This project is a multi-agent, sponsor-integrated artistic QR code generator built for the WeaveHacks hackathon. It uses a React frontend to simulate agent workflows, protocol messages, and artistic QR code creation.
 
+## How It Works
+
+1. **User Interaction (Frontend)**
+   - User enters Brand Name, QR Data, and Art Style in the web UI.
+   - Clicks "Generate Artistic QR Code" (main button at the top).
+
+2. **Frontend to Backend Communication**
+   - Frontend sends a POST request to the backend (`/run-crew` endpoint) with the brand name and QR data.
+
+3. **Multi-Agent Orchestration (Backend)**
+   - Backend uses CrewAI to orchestrate a multi-step, multi-agent workflow:
+     - **EXA Search Agent:** Finds URLs about the brand’s visual identity.
+     - **Browserbase Scraper Agent:** Scrapes those URLs for text content.
+     - **Style Extractor Agent:** Extracts style keywords and color palette.
+     - **Brand Analyst Agent:** Summarizes the brand’s visual identity.
+     - **Prompt Engineer Agent:** Crafts a high-quality, AI-art-style prompt (comma-separated, up to 5 unique keywords, ≤120 chars, in the style of your provided example) tailored to the brand, logo, and color palette.
+
+4. **QR Code Generation**
+   - Backend calls the Replicate API to generate an artistic QR code using the engineered prompt and user’s QR data.
+
+5. **Report Writing**
+   - A Report Writer Agent (LLM) generates a detailed report summarizing the research, the prompt, and the QR code art.
+
+6. **Response to Frontend**
+   - Backend returns the generated QR code image URL, the engineered prompt, research steps/results, and the final report.
+
+7. **Frontend Display**
+   - Frontend displays the generated QR code image, the report, and (optionally) the research results, agent logs, and workflow trace.
+
+**Summary Diagram:**
+
+```
+User Input (Brand, QR Data, Style)
+        |
+        v
+Frontend (React)  <---(API)--->  Backend (FastAPI + CrewAI)
+        |                               |
+        |                               v
+        |                    [Multi-Agent Crew]
+        |                    - EXA Search Agent
+        |                    - Browserbase Scraper
+        |                    - Style Extractor
+        |                    - Brand Analyst
+        |                    - Prompt Engineer
+        |                               |
+        |                               v
+        |                    Replicate API (QR Art)
+        |                               |
+        |                    Report Writer Agent
+        |                               |
+        |<------------------------------|
+        v
+User sees QR code, prompt, report, logs, and trace
+```
+
 ## Features
 - Multi-agent orchestration (Crew AI)
 - Sponsor tool simulation: Weave, Exa, BrowserBase, Google Cloud, Fly.io
