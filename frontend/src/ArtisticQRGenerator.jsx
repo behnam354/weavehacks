@@ -541,7 +541,19 @@ const ArtisticQRGenerator = () => {
                   <p>Art Score: {generatedQR.performance.artisticScore}/10</p>
                   <p>Generation: {generatedQR.performance.generationTime}</p>
                 </div>
-                <button className="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg mt-3 flex items-center justify-center gap-2">
+                <button
+                  className="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg mt-3 flex items-center justify-center gap-2"
+                  onClick={() => {
+                    if (generatedQR?.image) {
+                      const link = document.createElement('a');
+                      link.href = generatedQR.image;
+                      link.download = `artistic-qr-${generatedQR.style || 'qr'}.png`;
+                      document.body.appendChild(link);
+                      link.click();
+                      document.body.removeChild(link);
+                    }
+                  }}
+                >
                   <Download className="w-4 h-4" />
                   Download
                 </button>
