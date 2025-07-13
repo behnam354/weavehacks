@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Palette, QrCode, Bot, Zap, Search, Image, Download, Trophy, Cloud, Globe, Cpu, Database, Monitor, Rocket, Play, Code, Eye, CheckCircle } from 'lucide-react';
 
 const ArtisticQRGenerator = () => {
-  const [qrData, setQrData] = useState('https://weavehacks.com');
+  const [qrData, setQrData] = useState('behnamshahbazi.com/qrwe');
   const [artStyle, setArtStyle] = useState('cyberpunk');
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedQR, setGeneratedQR] = useState(null);
@@ -365,6 +365,16 @@ const ArtisticQRGenerator = () => {
         <div className="mt-2 text-xs text-gray-500">
           Backend: {backendUrl.includes('localhost') ? '🟢 Local Development' : '🚀 Production (Fly.io)'}
         </div>
+        <div className="flex justify-center mt-6">
+          <button
+            onClick={runCrewWorkflow}
+            className="bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold py-3 px-8 rounded-lg shadow-lg hover:from-blue-700 hover:to-purple-700 transition-all flex items-center gap-2 text-lg"
+            style={{ minWidth: 320 }}
+          >
+            <Rocket className="w-6 h-6" />
+            Generate Artistic QR Code
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-4 gap-4">
@@ -379,6 +389,17 @@ const ArtisticQRGenerator = () => {
             <div className="space-y-3">
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-1">
+                  Brand Name
+                </label>
+                <input
+                  type="text"
+                  value={crewTopic}
+                  onChange={e => setCrewTopic(e.target.value)}
+                  className="w-full px-3 py-2 bg-gray-600 text-white rounded-lg border border-gray-500 focus:border-blue-400"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">
                   QR Data
                 </label>
                 <input
@@ -388,7 +409,6 @@ const ArtisticQRGenerator = () => {
                   className="w-full px-3 py-2 bg-gray-700 text-white rounded-lg border border-gray-600 focus:border-purple-500"
                 />
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-1">
                   Art Style
@@ -405,7 +425,6 @@ const ArtisticQRGenerator = () => {
                   <option value="watercolor">Watercolor</option>
                 </select>
               </div>
-
               <button
                 onClick={runCrewAIWorkflow}
                 disabled={isGenerating}
@@ -419,7 +438,7 @@ const ArtisticQRGenerator = () => {
                 ) : (
                   <>
                     <Play className="w-4 h-4" />
-                    Run Multi-Agent System
+                    Test Multi-Agent System
                   </>
                 )}
               </button>
@@ -457,25 +476,6 @@ const ArtisticQRGenerator = () => {
                 </div>
               ))}
             </div>
-          </div>
-
-          <div className="mt-4 bg-gray-700 rounded-lg p-4">
-            <label className="block text-sm font-medium text-gray-300 mb-1">
-              Brand Name
-            </label>
-            <input
-              type="text"
-              value={crewTopic}
-              onChange={e => setCrewTopic(e.target.value)}
-              className="w-full px-3 py-2 bg-gray-600 text-white rounded-lg border border-gray-500 focus:border-blue-400"
-            />
-            <button
-              onClick={runCrewWorkflow}
-              className="w-full mt-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium py-2 px-4 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all flex items-center justify-center gap-2"
-            >
-              <Rocket className="w-4 h-4" />
-              Generate Artistic QR Code
-            </button>
           </div>
         </div>
 

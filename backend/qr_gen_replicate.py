@@ -2,7 +2,7 @@ from crewai.tools import tool
 import time
 
 # 1. Create a regular function (no decorators)
-def generate_qr_art_func(prompt: str) -> str:
+def generate_qr_art_func(prompt: str, qr_code_content: str = "behnamshahbazi.com/qrwe") -> str:
     """
     Generates a QR code art image using Replicate based on a text prompt.
     Returns the Replicate image URL (frontend can render this directly).
@@ -36,9 +36,9 @@ def generate_qr_art_func(prompt: str) -> str:
                 "border": 2,
                 "height": 768,
                 "num_outputs": 1,
-                "guidance_scale": 5.7,
+                "guidance_scale": 7.5,
                 "negative_prompt": "Foreboding mystical, unblended, worst quality, normal quality, low quality, low res, blurry, ugly, disfigured, nsfw, people, animal, character, anime",
-                "qr_code_content": "behnamshahbazi.com/qrwe",
+                "qr_code_content": qr_code_content,
                 "qrcode_background": "white",
                 "num_inference_steps": 40,
                 "controlnet_conditioning_scale": 1.2
