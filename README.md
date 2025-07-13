@@ -1,3 +1,13 @@
+# AgentQR
+
+<p align="center">
+  <img src="./backend/qr_code_art.png" alt="AgentQR Artistic QR Code" width="320" />
+</p>
+
+<h2 align="center"><i>QR Codes, reimagined by AI</i></h2>
+
+---
+
 # Artistic QR Code Generator (WeaveHacks)
 
 This project is a multi-agent, sponsor-integrated artistic QR code generator built for the WeaveHacks hackathon. It uses a React frontend to simulate agent workflows, protocol messages, and artistic QR code creation.
