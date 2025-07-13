@@ -325,33 +325,59 @@ const ArtisticQRGenerator = () => {
       });
       const data = await res.json();
       console.log('Backend response:', data); // <-- Add this line for debugging
+      
+      // Extract the result - the backend returns the QR URL directly as the final result
       let resultText = '';
-      if (data.result && typeof data.result === 'object') {
-        if (data.result.raw) {
-          resultText = data.result.raw;
-        } else if (data.result.tasks_output) {
-          resultText = JSON.stringify(data.result.tasks_output, null, 2);
+      let qrImageUrl = null;
+      let qrPrompt = null;
+      
+      if (data.result) {
+        // Check if the result is a valid QR code URL
+        if (typeof data.result === 'string' && 
+            data.result.startsWith('http') && 
+            (data.result.includes('replicate.delivery') || data.result.includes('.png') || data.result.includes('.jpg'))) {
+          // This is a valid QR code URL
+          qrImageUrl = data.result;
+          resultText = `QR Code generated successfully!\nURL: ${data.result}`;
+          addLog('Crew AI', `Valid QR code URL detected: ${data.result}`, 'success');
+        } else if (typeof data.result === 'object') {
+          // Check if it's an object with the URL
+          if (data.result.qr_code_url || data.result.image_url || data.result.fallback_qr_url) {
+            qrImageUrl = data.result.qr_code_url || data.result.image_url || data.result.fallback_qr_url;
+            qrPrompt = data.result.concise_prompt || data.result.prompt;
+            resultText = JSON.stringify(data.result, null, 2);
+            addLog('Crew AI', `QR code URL found in object: ${qrImageUrl}`, 'success');
+          } else {
+            resultText = JSON.stringify(data.result, null, 2);
+            addLog('Crew AI', 'No QR code URL found in object response', 'warning');
+          }
         } else {
-          resultText = JSON.stringify(data.result, null, 2);
+          resultText = data.result;
+          addLog('Crew AI', `Non-URL result received: ${data.result}`, 'warning');
         }
-      } else if (typeof data.result === 'string') {
-        resultText = data.result;
       } else {
         resultText = 'No result data available';
+        addLog('Crew AI', 'No result data in response', 'error');
       }
+      
       setCrewResult(resultText);
-      // Fix: Look for qr_code_url/image_url and prompt inside data.result if not found at top level
-      let qrImageUrl = data.qr_code_url || data.image_url;
-      let qrPrompt = data.qr_prompt || data.prompt;
-      if ((!qrImageUrl || !qrPrompt) && data.result && typeof data.result === 'object') {
-        qrImageUrl = qrImageUrl || data.result.qr_code_url || data.result.image_url;
-        qrPrompt = qrPrompt || data.result.concise_prompt || data.result.prompt;
-      }
+      
+      // Set the generated QR if we found a URL
       if (qrImageUrl) {
-        setGeneratedQR({ image: qrImageUrl, prompt: qrPrompt });
+        setGeneratedQR({ 
+          image: qrImageUrl, 
+          prompt: qrPrompt || 'Generated using CrewAI workflow',
+          style: crewTopic 
+        });
+        addLog('Crew AI', `QR Code displayed: ${qrImageUrl}`, 'success');
+      } else {
+        addLog('Crew AI', 'No QR code URL found in response - check console for details', 'warning');
+        console.error('No QR code URL found. Full response:', data);
       }
-      addLog('Crew AI', 'Crew workflow completed successfully', 'success');
+      
+      addLog('Crew AI', 'Crew workflow completed', 'success');
     } catch (e) {
+      console.error('Crew workflow error:', e);
       setError('Failed to run Crew workflow. Please try again.');
       addLog('Crew AI', 'Failed to run Crew workflow', 'error');
     } finally {
@@ -537,12 +563,13 @@ const ArtisticQRGenerator = () => {
           <div className="bg-gray-800 rounded-xl p-4 mb-4">
             <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
               <Image className="w-5 h-5 text-purple-400" />
-              Generated QR
+              Generated QR Code
             </h2>
             {isGenerating ? (
               <div className="flex flex-col items-center justify-center py-8">
                 <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-purple-500 mb-4"></div>
                 <div className="text-purple-300">Generating QR code art...</div>
+                <div className="text-xs text-gray-500 mt-2">This may take 30-60 seconds</div>
               </div>
             ) : error ? (
               <div className="text-center py-8 text-red-400">
@@ -551,38 +578,82 @@ const ArtisticQRGenerator = () => {
               </div>
             ) : generatedQR ? (
               <div className="text-center">
-                <img 
-                  src={generatedQR.image} 
-                  alt="Generated QR Code"
-                  className="w-full h-48 object-contain border-2 border-purple-500 rounded-lg mb-3 bg-white p-2"
-                />
+                <div className="relative">
+                  <img 
+                    src={generatedQR.image} 
+                    alt="Generated QR Code"
+                    className="w-full h-64 object-contain border-2 border-purple-500 rounded-lg mb-3 bg-white p-2 shadow-lg"
+                    onError={(e) => {
+                      console.error('Failed to load QR image:', e);
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'block';
+                    }}
+                  />
+                  <div 
+                    className="hidden w-full h-64 border-2 border-red-500 rounded-lg mb-3 bg-gray-100 p-2 flex items-center justify-center text-red-500"
+                    style={{ display: 'none' }}
+                  >
+                    <div className="text-center">
+                      <QrCode className="w-16 h-16 mx-auto mb-2 opacity-50" />
+                      <p className="text-sm">Failed to load QR image</p>
+                      <a 
+                        href={generatedQR.image} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-xs text-blue-400 hover:underline mt-1 block"
+                      >
+                        Open in new tab
+                      </a>
+                    </div>
+                  </div>
+                </div>
+                
                 {generatedQR.prompt && (
-                  <div className="text-xs text-gray-700 bg-gray-100 rounded p-2 mb-2 break-words">
-                    <span className="font-semibold text-gray-500">Prompt:</span> {generatedQR.prompt}
+                  <div className="text-xs text-gray-300 bg-gray-700 rounded p-3 mb-3 break-words border border-gray-600">
+                    <span className="font-semibold text-purple-400">Prompt:</span> {generatedQR.prompt}
                   </div>
                 )}
-                <button
-                  className="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg mt-3 flex items-center justify-center gap-2 disabled:opacity-50"
-                  onClick={() => {
-                    if (generatedQR?.image) {
-                      const link = document.createElement('a');
-                      link.href = generatedQR.image;
-                      link.download = `artistic-qr-${generatedQR.style || 'qr'}.png`;
-                      document.body.appendChild(link);
-                      link.click();
-                      document.body.removeChild(link);
-                    }
-                  }}
-                  disabled={isGenerating}
-                >
-                  <Download className="w-4 h-4" />
-                  Download
-                </button>
+                
+                <div className="flex gap-2">
+                  <button
+                    className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg flex items-center justify-center gap-2 disabled:opacity-50"
+                    onClick={() => {
+                      if (generatedQR?.image) {
+                        const link = document.createElement('a');
+                        link.href = generatedQR.image;
+                        link.download = `artistic-qr-${generatedQR.style || 'qr'}.png`;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                      }
+                    }}
+                    disabled={isGenerating}
+                  >
+                    <Download className="w-4 h-4" />
+                    Download
+                  </button>
+                  <button
+                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg flex items-center justify-center gap-2"
+                    onClick={() => {
+                      if (generatedQR?.image) {
+                        window.open(generatedQR.image, '_blank');
+                      }
+                    }}
+                  >
+                    <Eye className="w-4 h-4" />
+                    View Full
+                  </button>
+                </div>
+                
+                <div className="mt-3 text-xs text-gray-400">
+                  Generated for: <span className="text-purple-400 font-semibold">{generatedQR.style || 'Unknown Brand'}</span>
+                </div>
               </div>
             ) : (
               <div className="text-center py-8 text-gray-500">
                 <QrCode className="w-16 h-16 mx-auto mb-2 opacity-50" />
-                <p className="text-sm">QR will appear here</p>
+                <p className="text-sm">QR code will appear here</p>
+                <p className="text-xs text-gray-600 mt-1">Click "Generate Artistic QR Code" to start</p>
               </div>
             )}
           </div>

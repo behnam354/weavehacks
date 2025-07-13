@@ -39,6 +39,16 @@ def initialize_wandb():
 async def startup_event():
     """Initialize W&B when the app starts"""
     initialize_wandb()
+    
+    # Initialize W&B for tracing (Weave is integrated with W&B)
+    try:
+        import wandb
+        if wandb.run is None:
+            wandb.init(project="weavehacks")
+        print("✅ W&B initialized successfully in main.py")
+    except Exception as e:
+        print(f"⚠️ W&B initialization failed in main.py: {e}")
+        print("⚠️ App will continue without W&B tracing")
 
 @app.get("/health")
 def health():
@@ -55,8 +65,7 @@ async def trace_event(request: Request):
             print(f"⚠️ Failed to log to W&B: {e}")
     else:
         print(f"📝 Trace event (W&B not available): {event}")
-    # Optionally, log to Weave (if using advanced tracing)
-    # weave.log(event)
+    # W&B logging is used for tracing
     return {"status": "logged", "event": event}
 
 @app.post("/debug-wandb")
@@ -76,5 +85,34 @@ class CrewRequest(BaseModel):
 
 @app.post("/run-crew")
 async def run_crew_endpoint(req: CrewRequest):
+    # Log API call to W&B
+    try:
+        import wandb
+        if wandb.run is not None:
+            wandb.log({
+                "api_endpoint": "/run-crew",
+                "topic": req.topic,
+                "timestamp": "start"
+            })
+    except Exception as e:
+        print(f"⚠️ Failed to log API start to W&B: {e}")
+    
     result = run_crew(req.topic)
+    
+    # Convert CrewOutput to string if needed for logging
+    result_for_logging = str(result) if hasattr(result, '__dict__') else result
+    
+    # Log API completion to W&B
+    try:
+        import wandb
+        if wandb.run is not None:
+            wandb.log({
+                "api_endpoint": "/run-crew",
+                "topic": req.topic,
+                "result": result_for_logging,
+                "timestamp": "end"
+            })
+    except Exception as e:
+        print(f"⚠️ Failed to log API end to W&B: {e}")
+    
     return {"result": result}
