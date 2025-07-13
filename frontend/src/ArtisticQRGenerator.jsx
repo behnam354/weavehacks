@@ -595,6 +595,19 @@ const ArtisticQRGenerator = () => {
 
       {/* Hidden Canvas for QR Generation */}
       <canvas ref={canvasRef} width={400} height={400} className="hidden" />
+
+      {/* Footer with team link */}
+      <footer className="mt-12 text-center text-xs text-gray-400">
+        <a
+          href="https://linktr.ee/weavehacks.agentqr"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-block px-4 py-2 rounded bg-gradient-to-r from-purple-700 to-blue-700 text-white font-semibold shadow hover:from-purple-800 hover:to-blue-800 transition-all"
+        >
+          👥 Meet the AgentQR Team
+        </a>
+        <div className="mt-2">Questions? Feedback? Reach out to us!</div>
+      </footer>
     </div>
   );
 };
