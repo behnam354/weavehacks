@@ -236,13 +236,28 @@ def run_crew(topic: str, qr_data: str = 'behnamshahbazi.com/qrwe'):
         )
         return research_agent.llm.call(prompt, temperature=0.3)
 
-    def make_qr_prompt(inputs):
+    def make_qr_prompt(inputs, art_style=None, company_name=None):
+        if art_style and art_style.lower() == 'abstract' and company_name:
+            # Try to extract a mission keyword from the summary, fallback to 'innovation'
+            import re
+            summary = inputs.get('summary', '')
+            match = re.search(r"mission.*?([a-zA-Z]+)", summary)
+            if match:
+                mission_keyword = match.group(1)
+            else:
+                words = [w for w in summary.split() if len(w) > 4]
+                mission_keyword = words[0] if words else 'innovation'
+            return f"{company_name}, {mission_keyword}"
+        if art_style and art_style.lower() == 'nature' and company_name:
+            return f"{company_name}, logo, AI, technology, nature"
+        # Default: original prompt engineering
         prompt = (
             f"Create an image-generation prompt for an artistic QR code.\n"
             f"Brand summary: {inputs['summary']}\n"
             f"Include design style, color palette, mood, composition details.\n"
             f"The prompt should be a comma-separated list of up to 5 unique keywords and phrases (no duplicates), no more than 120 characters in total, in the style of AI art prompts.\n"
             f"The prompt MUST be tailored to generate a CUTE, VERY ARTISTIC, and HIGH-QUALITY logo.\n"
+            f"The prompt MUST include the brand name: {company_name}.\n"
             f"Follow this example for style: 'cute, high quality, artistic, logo, dreamy, soft colors, adorable, intricate, digital painting, 64k'.\n"
             f"Tailor the keywords to the company or brand name, its logo, and its color palette. Respond ONLY with the short prompt for the QR code generator, nothing else."
         )
@@ -253,7 +268,12 @@ def run_crew(topic: str, qr_data: str = 'behnamshahbazi.com/qrwe'):
     scraped = scrape_with_browserbase(urls)
     style = extract_style(scraped)
     summary = summarize_brand(style)
-    qr_prompt = make_qr_prompt({"summary": summary})
+    # Determine art style and company name
+    art_style = None
+    if 'style_keywords' in style and style['style_keywords']:
+        art_style = style['style_keywords'][0]
+    company_name = topic
+    qr_prompt = make_qr_prompt({"summary": summary}, art_style=art_style, company_name=company_name)
     concise_prompt = qr_prompt.strip().split('\n')[0]
     print(f"[DEBUG] Researched prompt for QR code generator: {concise_prompt}")
 

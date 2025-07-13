@@ -340,13 +340,15 @@ const ArtisticQRGenerator = () => {
         resultText = 'No result data available';
       }
       setCrewResult(resultText);
-      // Fix: Look for qr_code_url/image_url inside data.result if not found at top level
+      // Fix: Look for qr_code_url/image_url and prompt inside data.result if not found at top level
       let qrImageUrl = data.qr_code_url || data.image_url;
-      if (!qrImageUrl && data.result && typeof data.result === 'object') {
-        qrImageUrl = data.result.qr_code_url || data.result.image_url;
+      let qrPrompt = data.qr_prompt || data.prompt;
+      if ((!qrImageUrl || !qrPrompt) && data.result && typeof data.result === 'object') {
+        qrImageUrl = qrImageUrl || data.result.qr_code_url || data.result.image_url;
+        qrPrompt = qrPrompt || data.result.concise_prompt || data.result.prompt;
       }
       if (qrImageUrl) {
-        setGeneratedQR({ image: qrImageUrl });
+        setGeneratedQR({ image: qrImageUrl, prompt: qrPrompt });
       }
       addLog('Crew AI', 'Crew workflow completed successfully', 'success');
     } catch (e) {
@@ -554,6 +556,11 @@ const ArtisticQRGenerator = () => {
                   alt="Generated QR Code"
                   className="w-full h-48 object-contain border-2 border-purple-500 rounded-lg mb-3 bg-white p-2"
                 />
+                {generatedQR.prompt && (
+                  <div className="text-xs text-gray-700 bg-gray-100 rounded p-2 mb-2 break-words">
+                    <span className="font-semibold text-gray-500">Prompt:</span> {generatedQR.prompt}
+                  </div>
+                )}
                 <button
                   className="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg mt-3 flex items-center justify-center gap-2 disabled:opacity-50"
                   onClick={() => {
