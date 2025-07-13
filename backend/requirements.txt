@@ -2,4 +2,6 @@ fastapi
 uvicorn
 wandb
 weave
-python-dotenv 
+python-dotenv
+crewai
+openai 

@@ -11,7 +11,21 @@ const ArtisticQRGenerator = () => {
   const [activeAgents, setActiveAgents] = useState([]);
   const [exaResults, setExaResults] = useState([]);
   const [protocolMessages, setProtocolMessages] = useState([]);
+  const [crewTopic, setCrewTopic] = useState('Corewave stock');
+  const [crewResult, setCrewResult] = useState(null);
   const canvasRef = useRef(null);
+
+  // Environment detection for backend URL
+  const getBackendUrl = () => {
+    // Check if we're in development mode
+    if (import.meta.env.DEV || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      return 'http://localhost:8000';
+    }
+    // Production: use deployed backend
+    return 'https://weavehacks-backend.fly.dev';
+  };
+
+  const backendUrl = getBackendUrl();
 
   // Real agent configurations
   const agentConfig = {
@@ -56,7 +70,7 @@ const ArtisticQRGenerator = () => {
     }]);
 
     // Send log event to backend for Weave logging
-    fetch('http://localhost:8000/trace', {
+    fetch(`${backendUrl}/trace`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(logEvent),
@@ -290,11 +304,47 @@ const ArtisticQRGenerator = () => {
   // Debug: Confirm backend and W&B connection
   const debugWandbConnection = async () => {
     try {
-      const res = await fetch('http://localhost:8000/debug-wandb', { method: 'POST' });
+      const res = await fetch(`${backendUrl}/debug-wandb`, { method: 'POST' });
       const data = await res.json();
       addLog('Weave Debug', data.message, 'success');
     } catch (e) {
       addLog('Weave Debug', 'Failed to connect to backend or W&B', 'error');
+    }
+  };
+
+  const runCrewWorkflow = async () => {
+    try {
+      addLog('Crew AI', `Running Crew workflow for topic: ${crewTopic}`, 'system');
+      const res = await fetch(`${backendUrl}/run-crew`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ topic: crewTopic }),
+      });
+      const data = await res.json();
+      
+      // Extract the actual result text from the Crew AI response
+      let resultText = '';
+      if (data.result && typeof data.result === 'object') {
+        // If it's an object with a 'raw' property, use that
+        if (data.result.raw) {
+          resultText = data.result.raw;
+        } else if (data.result.tasks_output) {
+          // If it has tasks_output, try to extract from there
+          resultText = JSON.stringify(data.result.tasks_output, null, 2);
+        } else {
+          // Fallback: stringify the entire result object
+          resultText = JSON.stringify(data.result, null, 2);
+        }
+      } else if (typeof data.result === 'string') {
+        resultText = data.result;
+      } else {
+        resultText = 'No result data available';
+      }
+      
+      setCrewResult(resultText);
+      addLog('Crew AI', 'Crew workflow completed successfully', 'success');
+    } catch (e) {
+      addLog('Crew AI', 'Failed to run Crew workflow', 'error');
     }
   };
 
@@ -308,6 +358,9 @@ const ArtisticQRGenerator = () => {
         <p className="text-gray-300 text-lg">
           Real Multi-Agent Artistic QR Generator • All Tools Integrated
         </p>
+        <div className="mt-2 text-xs text-gray-500">
+          Backend: {backendUrl.includes('localhost') ? '🟢 Local Development' : '🚀 Production (Fly.io)'}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-4 gap-4">
@@ -400,6 +453,25 @@ const ArtisticQRGenerator = () => {
                 </div>
               ))}
             </div>
+          </div>
+
+          <div className="mt-4 bg-gray-700 rounded-lg p-4">
+            <label className="block text-sm font-medium text-gray-300 mb-1">
+              Crew AI Topic
+            </label>
+            <input
+              type="text"
+              value={crewTopic}
+              onChange={e => setCrewTopic(e.target.value)}
+              className="w-full px-3 py-2 bg-gray-600 text-white rounded-lg border border-gray-500 focus:border-blue-400"
+            />
+            <button
+              onClick={runCrewWorkflow}
+              className="w-full mt-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium py-2 px-4 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all flex items-center justify-center gap-2"
+            >
+              <Rocket className="w-4 h-4" />
+              Run Crew AI Workflow
+            </button>
           </div>
         </div>
 
@@ -497,6 +569,26 @@ const ArtisticQRGenerator = () => {
                 </div>
               ))}
             </div>
+          </div>
+
+          {/* Crew AI Results */}
+          <div className="bg-gray-800 rounded-xl p-4 mt-4">
+            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+              <Rocket className="w-5 h-5 text-blue-400" />
+              Crew AI Results
+            </h3>
+            {crewResult ? (
+              <div className="bg-gray-900 rounded-lg p-3 max-h-64 overflow-y-auto">
+                <div className="text-sm text-gray-300 whitespace-pre-wrap font-mono">
+                  {crewResult}
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                <Rocket className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                <p className="text-sm">Crew AI results will appear here</p>
+              </div>
+            )}
           </div>
         </div>
       </div>
